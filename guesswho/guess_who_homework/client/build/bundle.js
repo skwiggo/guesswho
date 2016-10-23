@@ -48,10 +48,11 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var CommentBox = __webpack_require__(159);
+
+	var GameBox = __webpack_require__(159);
 
 	window.onload = function () {
-	  ReactDOM.render(React.createElement(CommentBox, null), document.getElementById('app'));
+	  ReactDOM.render(React.createElement(GameBox, null), document.getElementById('app'));
 	};
 
 /***/ },
@@ -211,7 +212,6 @@
 /***/ function(module, exports) {
 
 	// shim for using process in browser
-
 	var process = module.exports = {};
 
 	// cached from whatever global is present so that test runners that stub it
@@ -222,22 +222,84 @@
 	var cachedSetTimeout;
 	var cachedClearTimeout;
 
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
 	(function () {
-	  try {
-	    cachedSetTimeout = setTimeout;
-	  } catch (e) {
-	    cachedSetTimeout = function () {
-	      throw new Error('setTimeout is not defined');
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
 	    }
-	  }
-	  try {
-	    cachedClearTimeout = clearTimeout;
-	  } catch (e) {
-	    cachedClearTimeout = function () {
-	      throw new Error('clearTimeout is not defined');
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
 	    }
-	  }
 	} ())
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+
+
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+
+
+
+	}
 	var queue = [];
 	var draining = false;
 	var currentQueue;
@@ -262,7 +324,7 @@
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = cachedSetTimeout(cleanUpNextTick);
+	    var timeout = runTimeout(cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -279,7 +341,7 @@
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    cachedClearTimeout(timeout);
+	    runClearTimeout(timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -291,7 +353,7 @@
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        cachedSetTimeout(drainQueue, 0);
+	        runTimeout(drainQueue);
 	    }
 	};
 
@@ -19694,146 +19756,126 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var CommentList = __webpack_require__(160);
-	var CommentForm = __webpack_require__(162);
+	var DropDownSuspects = __webpack_require__(160);
+	var DropDownWinOrLose = __webpack_require__(161);
 
-	var CommentBox = React.createClass({
-	  displayName: 'CommentBox',
+	var GameBox = React.createClass({
+	  displayName: 'GameBox',
+
 
 	  getInitialState: function getInitialState() {
-	    return { data: [{ id: 1, author: 'Jay', text: 'Hello' }] };
+	    return { suspects: ["Rod", "Jane", "Freddy", "Zippy", "Bungle", "George", "Geoffrey"], CPUSuspect: null, focusSuspect: null };
 	  },
-	  handleCommentSubmit: function handleCommentSubmit(comment) {
-	    var comments = this.state.data;
-	    comment.id = Date.now();
-	    var newComments = comments.concat([comment]);
-	    this.setState({ data: newComments });
+
+	  setfocusSuspect: function setfocusSuspect(index) {
+	    var newEntry = this.state.suspects[index];
+	    this.setState({ focusSuspect: newEntry });
 	  },
+
+	  setCPUSuspect: function setCPUSuspect() {
+	    var randomSuspect = this.state.suspects[Math.floor(Math.random() * this.state.suspects.length)];
+	    this.setState({ CPUSuspect: randomSuspect });
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    this.setCPUSuspect();
+	  },
+
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      { className: 'commentBox' },
+	      null,
 	      React.createElement(
-	        'h1',
+	        'h2',
 	        null,
-	        'Comments'
+	        'Guess Rainbow!'
 	      ),
-	      React.createElement(CommentList, { data: this.state.data }),
-	      React.createElement(CommentForm, { onCommentSubmit: this.handleCommentSubmit })
+	      React.createElement(
+	        'h4',
+	        null,
+	        'Guess which member of the Rainbow cast has stolen the last piece of cake?'
+	      ),
+	      React.createElement(DropDownSuspects, { suspects: this.state.suspects, selectSuspect: this.setfocusSuspect }),
+	      React.createElement(
+	        DropDownWinOrLose,
+	        { suspect: this.state.focusSuspect, CPUSuspect: this.state.CPUSuspect },
+	        'Please select a d'
+	      )
 	    );
 	  }
+
 	});
 
-	module.exports = CommentBox;
+	module.exports = GameBox;
 
 /***/ },
 /* 160 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	var React = __webpack_require__(1);
-	var Comment = __webpack_require__(161);
-	var CommentList = React.createClass({
-	  displayName: 'CommentList',
+
+	var DropDownSuspects = React.createClass({
+	  displayName: "DropDownSuspects",
+
+
+	  handleChange: function handleChange(event) {
+	    var newIndex = event.target.value;
+	    console.log(newIndex);
+	    //send info back 
+	    this.props.selectSuspect(newIndex);
+	  },
 
 	  render: function render() {
-
-	    var commentNodes = this.props.data.map(function (comment) {
+	    var options = this.props.suspects.map(function (suspect, index) {
 	      return React.createElement(
-	        Comment,
-	        { author: comment.author, key: comment.id },
-	        comment.text
+	        "option",
+	        { key: index, value: index },
+	        suspect
 	      );
 	    });
 
 	    return React.createElement(
-	      'div',
-	      { className: 'commentList' },
-	      commentNodes
+	      "select",
+	      { id: "suspects", onChange: this.handleChange },
+	      React.createElement(
+	        "option",
+	        { value: "Select Suspect" },
+	        "Select Suspect"
+	      ),
+	      options
 	    );
 	  }
 	});
-	module.exports = CommentList;
+
+	module.exports = DropDownSuspects;
 
 /***/ },
 /* 161 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-
-	var React = __webpack_require__(1);
-	var Comment = React.createClass({
-	  displayName: "Comment",
-
-	  render: function render() {
-	    return React.createElement(
-	      "div",
-	      { className: "comment" },
-	      React.createElement(
-	        "h2",
-	        { className: "commentAuthor" },
-	        this.props.author
-	      ),
-	      this.props.children
-	    );
-	  }
-	});
-
-	module.exports = Comment;
-
-/***/ },
-/* 162 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var CommentForm = React.createClass({
-	  displayName: 'CommentForm',
 
-	  getInitialState: function getInitialState() {
-	    return { author: '', text: '' };
-	  },
-	  handleAuthorChange: function handleAuthorChange(e) {
-	    this.setState({ author: e.target.value });
-	  },
-	  handleTextChange: function handleTextChange(e) {
-	    this.setState({ text: e.target.value });
-	  },
-	  handleSubmit: function handleSubmit(e) {
-	    e.preventDefault();
-	    var author = this.state.author.trim();
-	    var text = this.state.text.trim();
-	    if (!text || !author) {
-	      return;
-	    }
-	    // TODO: send request to the server
-	    this.props.onCommentSubmit({ author: author, text: text });
-	    this.setState({ author: '', text: '' });
-	  },
-	  render: function render() {
+	var DropDownWinOrLose = function DropDownWinOrLose(props) {
+	  if (props.suspect != props.CPUSuspect) {
 	    return React.createElement(
-	      'form',
-	      { className: 'commentForm', onSubmit: this.handleSubmit },
-	      React.createElement('input', {
-	        type: 'text',
-	        placeholder: 'Your name',
-	        value: this.state.author,
-	        onChange: this.handleAuthorChange
-	      }),
-	      React.createElement('input', {
-	        type: 'text',
-	        placeholder: 'Say something...',
-	        value: this.state.text,
-	        onChange: this.handleTextChange
-	      }),
-	      React.createElement('input', { type: 'submit', value: 'Post' })
+	      'h2',
+	      null,
+	      'Nope! Try Again!'
+	    );
+	  } else if (props.suspect === props.CPUSuspect) {
+	    return React.createElement(
+	      'h2',
+	      null,
+	      'Congratulations, You WIN! Reload to try again!'
 	    );
 	  }
-	});
+	};
 
-	module.exports = CommentForm;
+	module.exports = DropDownWinOrLose;
 
 /***/ }
 /******/ ]);

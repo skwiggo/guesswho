@@ -6,7 +6,7 @@ var DropDownSuspects = React.createClass({
     var newIndex = event.target.value;
     console.log(newIndex);
     //send info back 
-    this.props.suspects(newIndex);
+    this.props.selectSuspect(newIndex);
   },
 
   render: function(){
@@ -16,8 +16,8 @@ var DropDownSuspects = React.createClass({
 
     return(
       <select id="suspects" onChange={this.handleChange}>
-        {options}
         <option value="Select Suspect">Select Suspect</option>
+          {options}
       </select>
     )
   }
