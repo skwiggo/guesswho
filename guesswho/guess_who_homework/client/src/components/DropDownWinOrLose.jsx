@@ -3,10 +3,7 @@ var React = require('react');
 var DropDownWinOrLose = React.createClass({
 
   handleClick: function() {
-    var button = document.querySelector('.reload');
-    button.onclick = function() {
-      location.reload()
-    }
+    location.reload()
   },
 
   render: function() {
@@ -14,12 +11,12 @@ var DropDownWinOrLose = React.createClass({
     return(<h2>Please select a suspect!</h2>)
   }
   else if(this.props.suspect != this.props.CPUSuspect) {
-    return(<h2>Oh dear thats not right...guess again!</h2>)
+    return(<h2 className='red'>Oh dear thats not right...guess again!</h2>)
     }
   else if (this.props.suspect === this.props.CPUSuspect) {
     return(
       <div>
-      <h2>Congratulations, You WIN! Reload to try again!</h2>
+      <h2 className='green'>Congratulations, You WIN! Reload to try again!</h2>
       <button className='reload' onClick={this.handleClick}>Reload!</button>
       </div>
       )

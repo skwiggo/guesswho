@@ -19866,10 +19866,7 @@
 
 
 	  handleClick: function handleClick() {
-	    var button = document.querySelector('.reload');
-	    button.onclick = function () {
-	      location.reload();
-	    };
+	    location.reload();
 	  },
 
 	  render: function render() {
@@ -19882,7 +19879,7 @@
 	    } else if (this.props.suspect != this.props.CPUSuspect) {
 	      return React.createElement(
 	        'h2',
-	        null,
+	        { className: 'red' },
 	        'Oh dear thats not right...guess again!'
 	      );
 	    } else if (this.props.suspect === this.props.CPUSuspect) {
@@ -19891,7 +19888,7 @@
 	        null,
 	        React.createElement(
 	          'h2',
-	          null,
+	          { className: 'green' },
 	          'Congratulations, You WIN! Reload to try again!'
 	        ),
 	        React.createElement(
