@@ -1,10 +1,10 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
-var CommentBox = require('./components/CommentBox.jsx');
+var CommentBox = require('./components/GameBox.jsx');
 
 window.onload = function(){
   ReactDOM.render(
-    <CommentBox/>,
+    <GameBox/>,
     document.getElementById('app')
   );
 }
