@@ -19767,7 +19767,7 @@
 	    return { suspects: ["Rod", "Jane", "Freddy", "Zippy", "Bungle", "George", "Geoffrey"], CPUSuspect: null, focusSuspect: null };
 	  },
 
-	  setfocusSuspect: function setfocusSuspect(index) {
+	  setFocusSuspect: function setFocusSuspect(index) {
 	    var newEntry = this.state.suspects[index];
 	    this.setState({ focusSuspect: newEntry });
 	  },
@@ -19787,7 +19787,7 @@
 	      null,
 	      React.createElement(
 	        'h2',
-	        null,
+	        { className: 'rainbow' },
 	        'Guess Rainbow!'
 	      ),
 	      React.createElement(
@@ -19795,7 +19795,9 @@
 	        null,
 	        'Guess which member of the Rainbow cast has stolen the last piece of cake?'
 	      ),
-	      React.createElement(DropDownSuspects, { suspects: this.state.suspects, selectSuspect: this.setfocusSuspect }),
+	      React.createElement('img', { src: 'http://i.dailymail.co.uk/i/pix/2014/10/19/1413724438287_wps_71_B3JXC6_RAINBOW_1970s_UK_T.jpg', width: '500px', height: '300px' }),
+	      React.createElement('br', null),
+	      React.createElement(DropDownSuspects, { suspects: this.state.suspects, selectSuspect: this.setFocusSuspect }),
 	      React.createElement(
 	        DropDownWinOrLose,
 	        { suspect: this.state.focusSuspect, CPUSuspect: this.state.CPUSuspect },
@@ -19859,21 +19861,48 @@
 
 	var React = __webpack_require__(1);
 
-	var DropDownWinOrLose = function DropDownWinOrLose(props) {
-	  if (props.suspect != props.CPUSuspect) {
-	    return React.createElement(
-	      'h2',
-	      null,
-	      'Nope! Try Again!'
-	    );
-	  } else if (props.suspect === props.CPUSuspect) {
-	    return React.createElement(
-	      'h2',
-	      null,
-	      'Congratulations, You WIN! Reload to try again!'
-	    );
+	var DropDownWinOrLose = React.createClass({
+	  displayName: 'DropDownWinOrLose',
+
+
+	  handleClick: function handleClick() {
+	    var button = document.querySelector('.reload');
+	    button.onclick = function () {
+	      location.reload();
+	    };
+	  },
+
+	  render: function render() {
+	    if (this.props.suspect === null) {
+	      return React.createElement(
+	        'h2',
+	        null,
+	        'Please select a suspect!'
+	      );
+	    } else if (this.props.suspect != this.props.CPUSuspect) {
+	      return React.createElement(
+	        'h2',
+	        null,
+	        'Oh dear thats not right...guess again!'
+	      );
+	    } else if (this.props.suspect === this.props.CPUSuspect) {
+	      return React.createElement(
+	        'div',
+	        null,
+	        React.createElement(
+	          'h2',
+	          null,
+	          'Congratulations, You WIN! Reload to try again!'
+	        ),
+	        React.createElement(
+	          'button',
+	          { className: 'reload', onClick: this.handleClick },
+	          'Reload!'
+	        )
+	      );
+	    }
 	  }
-	};
+	});
 
 	module.exports = DropDownWinOrLose;
 
